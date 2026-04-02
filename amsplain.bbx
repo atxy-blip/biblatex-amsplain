@@ -1,0 +1,80 @@
+\ProvidesFile{amsplain.bbx}[2026/04/02 v0.1.0 Custom amsplain biblatex bibliography style]
+
+\RequireBibliographyStyle{numeric}
+
+% Parameters and default options
+\ExecuteBibliographyOptions{
+  sorting=nyt,
+  maxnames=99,
+  giveninits=false,
+  date=year
+}
+
+% =====================================================================
+% 1. Automatic line-break optimization
+% =====================================================================
+\AtBeginBibliography{%
+  \hyphenpenalty=100
+  \tolerance=8000
+  \hbadness=5000
+  \interlinepenalty=100\relax
+  \widowpenalty=100\relax
+  \clubpenalty=100\relax
+}
+
+% Line-break penalty values for long URLs or DOIs
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
+
+% =====================================================================
+% 2. Field format redefinitions
+% =====================================================================
+% Title: italic, no quotation marks
+\DeclareFieldFormat{title}{\mkbibemph{#1}}
+\DeclareFieldFormat[article,inbook,incollection,inproceedings,patent,thesis,unpublished]{title}{\mkbibemph{#1}}
+
+% Journal title: upright (roman) font
+\DeclareFieldFormat{journaltitle}{#1}
+
+% Volume number: bold
+\DeclareFieldFormat[article,periodical]{volume}{\mkbibbold{#1}}
+
+% Issue number: with no. mark
+\DeclareFieldFormat[article,periodical]{number}{no.~#1}
+
+% Page numbers: strip the "pp." prefix for article entries
+\DeclareFieldFormat[article]{pages}{#1}
+
+% Year
+\DeclareFieldFormat{date}{#1}
+
+% =====================================================================
+% 3. Concatenation logic (BibMacros & Drivers)
+% =====================================================================
+% E.g. Journal Vol (Year), no. X
+\renewbibmacro*{journal+issuetitle}{%
+  \usebibmacro{journal}%
+  \setunit*{\addspace}%
+  \printfield{volume}%
+  \setunit*{\addspace}%
+  \printtext[parens]{\usebibmacro{date}}% Enclose the year in parentheses
+  \setunit{\addcomma\space}%
+  \printfield{number}% Print issue number containing "no."
+  \newunit}
+
+\DeclareBibliographyDriver{article}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/translator+others}%
+  \setunit{\labelnamepunct}\newblock
+  \usebibmacro{title}%
+  \setunit{\addperiod\space}\newblock
+  \usebibmacro{journal+issuetitle}%
+  \setunit{\addcomma\space}%
+  \printfield{pages}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}
+  \usebibmacro{finentry}}
